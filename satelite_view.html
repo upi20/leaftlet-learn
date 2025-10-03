@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple Coordinate Picker</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+    }
+    .controls {
+      background: #f0f0f0;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+    }
+    .controls input {
+      padding: 8px;
+      margin: 5px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+    }
+    #map {
+      height: 70vh;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="controls">
+    <h3>Coordinate Picker</h3>
+    <input type="number" id="lat" placeholder="Latitude" step="any" value="-6.9175">
+    <input type="number" id="lng" placeholder="Longitude" step="any" value="107.6191">
+  </div>
+  
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    let map;
+    let marker;
+
+    // Initialize map at Alun-alun Bandung
+    map = L.map('map').setView([-6.9175, 107.6191], 15);
+    
+    // Add satellite tiles
+    const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Satellite imagery'
+    }).addTo(map);
+
+    // Add labels layer (street names, buildings, etc.) on top of satellite
+    const labelsLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      pane: 'shadowPane'
+    }).addTo(map);
+
+    // Alternative: Add OpenStreetMap labels (more detailed street names)
+    const osmLabelsLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      opacity: 0.6  // Make it semi-transparent to show satellite underneath
+    });
+
+    // Layer control to toggle between different label options
+    const baseLayers = {
+      "Satellite": satelliteLayer
+    };
+    
+    const overlayLayers = {
+      "Street Names & Labels": labelsLayer,
+      "OpenStreetMap Overlay": osmLabelsLayer
+    };
+
+    L.control.layers(baseLayers, overlayLayers).addTo(map);
+
+    // Add marker at Alun-alun Bandung
+    marker = L.marker([-6.9175, 107.6191]).addTo(map);
+
+    // Click on map to move marker
+    map.on('click', function(e) {
+      const lat = e.latlng.lat;
+      const lng = e.latlng.lng;
+      
+      // Move marker to clicked location
+      marker.setLatLng([lat, lng]);
+      
+      // Update input fields
+      document.getElementById('lat').value = lat.toFixed(6);
+      document.getElementById('lng').value = lng.toFixed(6);
+    });
+  </script>
+</body>
+</html>
