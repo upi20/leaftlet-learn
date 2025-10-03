@@ -6,36 +6,36 @@
   <title>Simple Coordinate Picker</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
-    body {
+    .lmp-body {
       margin: 0;
       padding: 20px;
       font-family: Arial, sans-serif;
     }
-    .controls {
+    .lmp-controls {
       background: #f0f0f0;
       padding: 15px;
       margin-bottom: 10px;
       border-radius: 5px;
     }
-    .controls input {
+    .lmp-controls input {
       padding: 8px;
       margin: 5px;
       border: 1px solid #ccc;
       border-radius: 3px;
     }
-    .search-container {
+    .lmp-search-container {
       display: flex;
       gap: 5px;
       margin-top: 10px;
       position: relative;
     }
-    .search-container input {
+    .lmp-search-container input {
       flex: 1;
       padding: 8px;
       border: 1px solid #ccc;
       border-radius: 3px;
     }
-    .search-container button {
+    .lmp-search-container button {
       padding: 8px 15px;
       background: #007bff;
       color: white;
@@ -43,20 +43,20 @@
       border-radius: 3px;
       cursor: pointer;
     }
-    .search-container button:hover {
+    .lmp-search-container button:hover {
       background: #0056b3;
     }
-    .search-status {
+    .lmp-search-status {
       margin-top: 5px;
       font-size: 12px;
       color: #666;
       display: none;
     }
-    .search-status.active {
+    .lmp-search-status.active {
       display: block;
       color: #28a745;
     }
-    .reset-button {
+    .lmp-reset-button {
       padding: 4px 8px;
       background: #dc3545;
       color: white;
@@ -66,10 +66,10 @@
       font-size: 11px;
       margin-left: 5px;
     }
-    .reset-button:hover {
+    .lmp-reset-button:hover {
       background: #c82333;
     }
-    .location-button {
+    .lmp-location-button {
       padding: 8px 15px;
       background: #28a745;
       color: white;
@@ -78,14 +78,14 @@
       cursor: pointer;
       margin-left: 10px;
     }
-    .location-button:hover {
+    .lmp-location-button:hover {
       background: #218838;
     }
-    .location-button:disabled {
+    .lmp-location-button:disabled {
       background: #6c757d;
       cursor: not-allowed;
     }
-    .search-results {
+    .lmp-search-results {
       position: absolute;
       top: 100%;
       left: 0;
@@ -99,22 +99,22 @@
       z-index: 1000;
       display: none;
     }
-    .search-result-item {
+    .lmp-search-result-item {
       padding: 10px;
       cursor: pointer;
       border-bottom: 1px solid #eee;
     }
-    .search-result-item:hover {
+    .lmp-search-result-item:hover {
       background: #f0f0f0;
     }
-    .search-result-item:last-child {
+    .lmp-search-result-item:last-child {
       border-bottom: none;
     }
-    .search-result-name {
+    .lmp-search-result-name {
       font-weight: bold;
       color: #333;
     }
-    .search-result-address {
+    .lmp-search-result-address {
       font-size: 12px;
       color: #666;
       margin-top: 2px;
@@ -155,34 +155,42 @@
       margin: 5px 0;
       font-size: 12px;
     }
-    #map {
+    #lmp-map {
       height: 70vh;
       border: 1px solid #ccc;
       border-radius: 5px;
     }
   </style>
 </head>
-<body>
-  <div class="controls">
+<body class="lmp-body">
+  <div class="lmp-controls">
     <h3>Coordinate Picker</h3>
-    <input type="number" id="lat" placeholder="Latitude" step="any" value="-6.9175">
-    <input type="number" id="lng" placeholder="Longitude" step="any" value="107.6191">
-    <button class="location-button" onclick="useMyLocation()" id="locationBtn">📍 Gunakan Lokasi Saya</button>
+    <input type="number" id="lmp-lat" placeholder="Latitude" step="any" value="-6.9175">
+    <input type="number" id="lmp-lng" placeholder="Longitude" step="any" value="107.6191">
+    <button class="lmp-location-button" onclick="lmpUseMyLocation()" id="lmp-locationBtn">📍 Gunakan Lokasi Saya</button>
     
-    <div class="search-container">
-      <input type="text" id="searchInput" placeholder="Cari lokasi (contoh: Gedung Sate Bandung)">
-      <div id="searchResults" class="search-results"></div>
+    <div class="lmp-search-container">
+      <input type="text" id="lmp-searchInput" placeholder="Cari lokasi (contoh: Gedung Sate Bandung)">
+      <div id="lmp-searchResults" class="lmp-search-results"></div>
     </div>
-    <div id="searchStatus" class="search-status">
-      🏛️ Pencarian difokuskan di sekitar: <span id="kecamatanName"></span>
-      <button class="reset-button" onclick="resetToGlobalSearch()">Reset ke Global</button>
+    <div id="lmp-searchStatus" class="lmp-search-status">
+      🏛️ Pencarian difokuskan di sekitar: <span id="lmp-kecamatanName"></span>
+      <button class="lmp-reset-button" onclick="lmpResetToGlobalSearch()">Reset ke Global</button>
     </div>
   </div>
   
-  <div id="map"></div>
+  <div id="lmp-map"></div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
+    // Fix Leaflet marker icon issue
+    delete L.Icon.Default.prototype._getIconUrl;
+    L.Icon.Default.mergeOptions({
+      iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+      iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+    });
+    
     let map;
     let marker;
     
@@ -190,9 +198,10 @@
     let referenceCoords = null; // Store kecamatan coordinates
     let isKecamatanSelected = false; // Flag to track if kecamatan is selected
     let searchRadius = 20; // Search radius in km
+    let defaultZoomLevel = 19; // Default zoom level for normal locations
 
     // Initialize map at Alun-alun Bandung
-    map = L.map('map').setView([-6.9175, 107.6191], 15);
+    map = L.map('lmp-map').setView([-6.9175, 107.6191], defaultZoomLevel);
     
     // Add satellite tiles
     const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
@@ -255,24 +264,24 @@
       }
     });
 
-    // Hierarchical search function
-    async function searchLocation() {
-      const query = document.getElementById('searchInput').value.trim();
-      const resultsDiv = document.getElementById('searchResults');
+        // Hierarchical search function
+    async function lmpSearchLocation() {
+      const query = document.getElementById('lmp-searchInput').value.trim();
+      const resultsDiv = document.getElementById('lmp-searchResults');
       
       if (!query) {
-        showError('Masukkan nama lokasi untuk dicari', resultsDiv);
+        lmpShowError('Masukkan nama lokasi untuk dicari', resultsDiv);
         return;
       }
       
       if (query.length < 2) {
-        showError('Masukkan minimal 2 karakter untuk pencarian', resultsDiv);
+        lmpShowError('Masukkan minimal 2 karakter untuk pencarian', resultsDiv);
         return;
       }
       
       try {
         // Show loading
-        showLoading('Mencari lokasi...', resultsDiv);
+        lmpShowLoading('Mencari lokasi...', resultsDiv);
         
         let searchResults = [];
         
@@ -280,25 +289,25 @@
         if (isKecamatanSelected && referenceCoords) {
           console.log('Searching locally around kecamatan...');
           try {
-            searchResults = await performLocalSearch(query);
+            searchResults = await lmpPerformLocalSearch(query);
             
             if (searchResults.length === 0) {
               console.log('No local results, falling back to global search...');
-              showLoading('Tidak ditemukan di sekitar kecamatan, mencari secara global...', resultsDiv);
-              searchResults = await performGlobalSearch(query);
+              lmpShowLoading('Tidak ditemukan di sekitar kecamatan, mencari secara global...', resultsDiv);
+              searchResults = await lmpPerformGlobalSearch(query);
             }
           } catch (localError) {
             console.warn('Local search failed, trying global search:', localError);
-            showLoading('Pencarian lokal gagal, mencari secara global...', resultsDiv);
-            searchResults = await performGlobalSearch(query);
+            lmpShowLoading('Pencarian lokal gagal, mencari secara global...', resultsDiv);
+            searchResults = await lmpPerformGlobalSearch(query);
           }
         } else {
           // Step 2: Global search (check if it's a kecamatan first)
           console.log('Performing global search...');
-          searchResults = await performGlobalSearch(query);
+          searchResults = await lmpPerformGlobalSearch(query);
         }
         
-        displaySearchResults(searchResults, resultsDiv);
+        lmpDisplaySearchResults(searchResults, resultsDiv);
         
       } catch (error) {
         console.error('Search error:', error);
@@ -315,12 +324,12 @@
           errorMessage += 'Silakan coba lagi.';
         }
         
-        showError(errorMessage, resultsDiv);
+        lmpShowError(errorMessage, resultsDiv);
       }
     }
     
     // Local search within radius of kecamatan
-    async function performLocalSearch(query) {
+    async function lmpPerformLocalSearch(query) {
       const lat = referenceCoords.lat;
       const lng = referenceCoords.lng;
       
@@ -380,7 +389,7 @@
     }
     
     // Global search
-    async function performGlobalSearch(query) {
+    async function lmpPerformGlobalSearch(query) {
       const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=10`;
       
       // Create abort controller for timeout
@@ -424,10 +433,10 @@
     }
     
     // Display search results
-    function displaySearchResults(data, resultsDiv) {
+    function lmpDisplaySearchResults(data, resultsDiv) {
       try {
         if (!data || !Array.isArray(data)) {
-          showError('Format data hasil pencarian tidak valid', resultsDiv);
+          lmpShowError('Format data hasil pencarian tidak valid', resultsDiv);
           return;
         }
         
@@ -442,7 +451,7 @@
             }
             
             const item = document.createElement('div');
-            item.className = 'search-result-item';
+            item.className = 'lmp-search-result-item';
             
             // Extract location name and check if it's a kecamatan
             const locationName = location.display_name.split(',')[0];
@@ -454,17 +463,17 @@
             const indicator = isKecamatan ? ' 🏛️' : '';
             
             item.innerHTML = `
-              <div class="search-result-name">${locationName}${indicator}</div>
-              <div class="search-result-address">${location.display_name}</div>
+              <div class="lmp-search-result-name">${locationName}${indicator}</div>
+              <div class="lmp-search-result-address">${location.display_name}</div>
             `;
             
             // Add click handler with error handling
             item.onclick = () => {
               try {
-                selectLocation(location, isKecamatan);
+                lmpSelectLocation(location, isKecamatan);
               } catch (error) {
                 console.error('Error in item click handler:', error);
-                showError('Terjadi kesalahan saat memilih lokasi', resultsDiv);
+                lmpShowError('Terjadi kesalahan saat memilih lokasi', resultsDiv);
               }
             };
             
@@ -476,17 +485,17 @@
           const message = isKecamatanSelected ? 
             'Tidak ditemukan di sekitar kecamatan ini. Coba dengan kata kunci yang berbeda.' :
             'Lokasi tidak ditemukan';
-          resultsDiv.innerHTML = `<div class="search-result-item">${message}</div>`;
+          resultsDiv.innerHTML = `<div class="lmp-search-result-item">${message}</div>`;
           resultsDiv.style.display = 'block';
         }
       } catch (error) {
         console.error('Error displaying search results:', error);
-        showError('Terjadi kesalahan saat menampilkan hasil pencarian', resultsDiv);
+        lmpShowError('Terjadi kesalahan saat menampilkan hasil pencarian', resultsDiv);
       }
     }
     
     // Function to select a location from dropdown
-    function selectLocation(location, isKecamatan = false) {
+    function lmpSelectLocation(location, isKecamatan = false) {
       try {
         if (!location || !location.lat || !location.lon) {
           throw new Error('Invalid location data');
@@ -501,7 +510,7 @@
         }
         
         // Move map and marker to selected location
-        const zoomLevel = isKecamatan ? 14 : 16; // Zoom out more for kecamatan
+        const zoomLevel = isKecamatan ? 14 : defaultZoomLevel; // Zoom out more for kecamatan
         map.setView([lat, lng], zoomLevel);
         marker.setLatLng([lat, lng]);
         
@@ -511,7 +520,7 @@
         
         // Update search input with selected location name
         const locationName = location.display_name ? location.display_name.split(',')[0] : 'Unknown Location';
-        document.getElementById('searchInput').value = locationName;
+        document.getElementById('lmp-searchInput').value = locationName;
         
         // If kecamatan is selected, set as reference point
         if (isKecamatan) {
@@ -521,7 +530,7 @@
           console.log(`Future searches will prioritize ${searchRadius}km radius around this point`);
           
           // Update placeholder to indicate local search is active
-          document.getElementById('searchInput').placeholder = `Cari di sekitar ${locationName} (atau lokasi lain)`;
+          document.getElementById('lmp-searchInput').placeholder = `Cari di sekitar ${locationName} (atau lokasi lain)`;
           
           // Show status indicator
           document.getElementById('kecamatanName').textContent = locationName;
@@ -538,40 +547,40 @@
     }
     
     // Reset to global search
-    function resetToGlobalSearch() {
+    function lmpResetToGlobalSearch() {
       referenceCoords = null;
       isKecamatanSelected = false;
       
       // Reset UI
-      document.getElementById('searchInput').placeholder = 'Cari lokasi (contoh: Gedung Sate Bandung)';
-      document.getElementById('searchStatus').classList.remove('active');
-      document.getElementById('searchResults').style.display = 'none';
+      document.getElementById('lmp-searchInput').placeholder = 'Cari lokasi (contoh: Gedung Sate Bandung)';
+      document.getElementById('lmp-searchStatus').classList.remove('active');
+      document.getElementById('lmp-searchResults').style.display = 'none';
       
       console.log('Reset to global search mode');
     }
     
     // Helper functions for user feedback
-    function showError(message, container) {
+    function lmpShowError(message, container) {
       if (!container) {
         console.error('Container element not found for error message:', message);
         return;
       }
-      container.innerHTML = `<div class="search-result-item error-message">${message}</div>`;
+      container.innerHTML = `<div class="lmp-search-result-item lmp-error-message">${message}</div>`;
       container.style.display = 'block';
     }
     
-    function showLoading(message, container) {
+    function lmpShowLoading(message, container) {
       if (!container) {
         console.error('Container element not found for loading message:', message);
         return;
       }
-      container.innerHTML = `<div class="search-result-item loading-message">${message}</div>`;
+      container.innerHTML = `<div class="lmp-search-result-item lmp-loading-message">${message}</div>`;
       container.style.display = 'block';
     }
     
     // Use current location
-    function useMyLocation() {
-      const locationBtn = document.getElementById('locationBtn');
+    function lmpUseMyLocation() {
+      const locationBtn = document.getElementById('lmp-locationBtn');
       
       if (!navigator.geolocation) {
         alert('Geolocation tidak didukung oleh browser ini.');
@@ -589,19 +598,19 @@
           const accuracy = position.coords.accuracy;
           
           // Move map and marker to current location
-          map.setView([lat, lng], 16);
+          map.setView([lat, lng], defaultZoomLevel);
           marker.setLatLng([lat, lng]);
           
           // Update input fields
-          document.getElementById('lat').value = lat.toFixed(6);
-          document.getElementById('lng').value = lng.toFixed(6);
+          document.getElementById('lmp-lat').value = lat.toFixed(6);
+          document.getElementById('lmp-lng').value = lng.toFixed(6);
           
           // Reset search input
-          document.getElementById('searchInput').value = '';
-          document.getElementById('searchInput').placeholder = 'Cari lokasi (contoh: Gedung Sate Bandung)';
+          document.getElementById('lmp-searchInput').value = '';
+          document.getElementById('lmp-searchInput').placeholder = 'Cari lokasi (contoh: Gedung Sate Bandung)';
           
           // Reset hierarchical search
-          resetToGlobalSearch();
+          lmpResetToGlobalSearch();
           
           // Show success message
           console.log(`Current location: ${lat}, ${lng} (accuracy: ${accuracy}m)`);
@@ -645,9 +654,9 @@
     // Hide dropdown when clicking outside
     document.addEventListener('click', function(event) {
       try {
-        const searchContainer = event.target.closest('.search-container');
+        const searchContainer = event.target.closest('.lmp-search-container');
         if (!searchContainer) {
-          document.getElementById('searchResults').style.display = 'none';
+          document.getElementById('lmp-searchResults').style.display = 'none';
         }
       } catch (error) {
         console.error('Error in click outside handler:', error);
@@ -655,10 +664,10 @@
     });
     
     // Allow search on Enter key
-    document.getElementById('searchInput').addEventListener('keypress', function(e) {
+    document.getElementById('lmp-searchInput').addEventListener('keypress', function(e) {
       try {
         if (e.key === 'Enter') {
-          searchLocation();
+          lmpSearchLocation();
         }
       } catch (error) {
         console.error('Error in keypress handler:', error);
@@ -667,7 +676,7 @@
     
     // Auto search while typing (with debounce)
     let searchTimeout;
-    document.getElementById('searchInput').addEventListener('input', function(e) {
+    document.getElementById('lmp-searchInput').addEventListener('input', function(e) {
       try {
         clearTimeout(searchTimeout);
         const query = e.target.value.trim();
@@ -675,13 +684,13 @@
         if (query.length >= 3) {
           searchTimeout = setTimeout(() => {
             try {
-              searchLocation();
+              lmpSearchLocation();
             } catch (error) {
               console.error('Error in debounced search:', error);
             }
           }, 500); // Wait 500ms after user stops typing
         } else {
-          document.getElementById('searchResults').style.display = 'none';
+          document.getElementById('lmp-searchResults').style.display = 'none';
         }
       } catch (error) {
         console.error('Error in input handler:', error);
